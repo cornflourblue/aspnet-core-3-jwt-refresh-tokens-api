@@ -27,6 +27,7 @@ namespace WebApi
         {
             // in memory database used for simplicity, change to a real db for production applications
             services.AddDbContext<DataContext>(x => x.UseInMemoryDatabase("TestDb"));
+
             services.AddCors();
             services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.IgnoreNullValues = true);
 
@@ -64,7 +65,7 @@ namespace WebApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DataContext context)
         {
-            // add hardcoded test user to db on startup,  
+            // add hardcoded test user to db on startup
             // plain text password is used for simplicity, hashed passwords should be used in production applications
             context.Users.Add(new User { FirstName = "Test", LastName = "User", Username = "test", Password = "test" });
             context.SaveChanges();
