@@ -76,6 +76,8 @@ namespace WebApi.Controllers
         public IActionResult GetById(int id)
         {
             var user = _userService.GetById(id);
+            if (user == null) return NotFound();
+
             return Ok(user);
         }
 
@@ -83,6 +85,8 @@ namespace WebApi.Controllers
         public IActionResult GetRefreshTokens(int id)
         {
             var user = _userService.GetById(id);
+            if (user == null) return NotFound();
+
             return Ok(user.RefreshTokens);
         }
 
