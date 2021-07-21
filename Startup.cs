@@ -22,20 +22,16 @@ namespace WebApi
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // in memory database used for simplicity, change to a real db for production applications
-            services.AddDbContext<DataContext>(x => x.UseInMemoryDatabase("TestDb"));
+            string connectionString = "Server=(localdb)\\mssqllocaldb;Database=testbytestsdb;Trusted_Connection=True;";
+            services.AddDbContext<DataContext>(options => options.UseSqlServer(connectionString));
 
-            services.AddCors();
-            services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.IgnoreNullValues = true);
+            services.AddControllers();
 
-            // configure strongly typed settings objects
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
 
-            // configure jwt authentication
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
             services.AddAuthentication(x =>
@@ -53,26 +49,20 @@ namespace WebApi
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuer = false,
                     ValidateAudience = false,
-                    // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
                     ClockSkew = TimeSpan.Zero
                 };
             });
 
-            // configure DI for application services
             services.AddScoped<IUserService, UserService>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DataContext context)
         {
-            // add hardcoded test user to db on startup
-            // plain text password is used for simplicity, hashed passwords should be used in production applications
-            context.Users.Add(new User { FirstName = "Test", LastName = "User", Username = "test", Password = "test" });
-            context.SaveChanges();
+            
 
             app.UseRouting();
+            app.UseStaticFiles();
 
-            // global cors policy
             app.UseCors(x => x
                 .SetIsOriginAllowed(origin => true)
                 .AllowAnyMethod()

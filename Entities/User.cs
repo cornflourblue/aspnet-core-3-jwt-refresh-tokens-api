@@ -9,6 +9,7 @@ namespace WebApi.Entities
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Username { get; set; }
+        public bool Admin { get; set; }
 
         [JsonIgnore]
         public string Password { get; set; }
