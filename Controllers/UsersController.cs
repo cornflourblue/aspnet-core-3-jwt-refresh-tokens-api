@@ -4,26 +4,55 @@ using WebApi.Services;
 using WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using System;
+using WebApi.Helpers;
+using System.Linq;
+using WebApi.Entities;
 
 namespace WebApi.Controllers
 {
-    [Authorize]
+    
     [ApiController]
     [Route("[controller]")]
     public class UsersController : ControllerBase
     {
         private IUserService _userService;
+        DataContext db;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, DataContext context)
         {
             _userService = userService;
+            db = context;
+            if (!db.Users.Any())
+            {
+                db.Users.Add(new User { FirstName = "Admin", LastName = "User", Username = "admin", Password = "admin", Admin = true });
+                db.Users.Add(new User { FirstName = "Test", LastName = "User", Username = "test", Password = "test" });
+                db.SaveChanges();
+            }
         }
 
-        [AllowAnonymous]
+        
         [HttpPost("authenticate")]
         public IActionResult Authenticate([FromBody] AuthenticateRequest model)
         {
             var response = _userService.Authenticate(model, ipAddress());
+
+            if (response == null)
+                return BadRequest(new { message = "Username or password is incorrect" });
+
+            setTokenCookie(response.RefreshToken);
+
+            return Ok(response);
+        }
+
+        [HttpPost("create")]
+        public IActionResult Create([FromBody] AuthenticateRequest model)
+        {
+
+            db.Users.Add(new User { FirstName = model.Username, Username = model.Username, Password = model.Password, Admin = false });
+            db.SaveChanges();
+
+            var response = _userService.Authenticate(model, ipAddress());
+            
 
             if (response == null)
                 return BadRequest(new { message = "Username or password is incorrect" });

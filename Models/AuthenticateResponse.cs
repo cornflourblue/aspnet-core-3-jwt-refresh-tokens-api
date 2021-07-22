@@ -9,6 +9,7 @@ namespace WebApi.Models
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Username { get; set; }
+        public bool Admin { get; set; }
         public string JwtToken { get; set; }
 
         [JsonIgnore] // refresh token is returned in http only cookie
@@ -20,6 +21,7 @@ namespace WebApi.Models
             FirstName = user.FirstName;
             LastName = user.LastName;
             Username = user.Username;
+            Admin = user.Admin;
             JwtToken = jwtToken;
             RefreshToken = refreshToken;
         }
